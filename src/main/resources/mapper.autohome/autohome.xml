@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "autohome.AutoHomeDao">
+
+    <resultMap id = "BaseResultMap" type = "entity.CarCategory">
+        <id column = "id" property = "id" />
+        <result column = "level" property = "level" />
+        <result column = "parent_id" property = "parentId" />
+        <result column = "first_letter" property = "firstLetter" />
+        <result column = "brand" property = "brand" />
+        <result column = "series" property = "series" />
+        <result column = "year" property = "year" />
+        <result column = "name" property = "name" />
+        <result column = "logo" property = "logo" />
+        <result column = "car_manufacturer" property = "carManufacturer" />
+        <result column = "car_type" property = "carType" />
+        <result column = "url" property = "url" />
+        <result column = "engine" property = "engine" />
+        <result column = "precursor" property = "precursor" />
+        <result column = "gear" property = "gear" />
+        <result column = "spec_id" property = "specId" />
+        <result column = "status" property = "status" />
+    </resultMap>
+
+
+    <!-- 根据ID查询 -->
+    <select id = "selectById" resultMap = "BaseResultMap">
+        select
+            *
+        from launa_autohome_cursor
+        where id = #{id}
+    </select>
+
+    <select id = "selectByLevelAndVersion" resultMap = "BaseResultMap">
+        select
+        *
+        from launa_autohome_cursor
+        where
+        is_deleted = 'N'
+        and `level` = #{level}
+        and version = #{version}
+        <if test="status != null">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id = "selectNoManufacturerCarCategory" resultMap="BaseResultMap">
+        select
+            *
+        from launa_autohome_cursor
+        where
+        is_deleted = 'N'
+        and `level` = 2
+        and version = #{version}
+        and car_manufacturer is null
+        and first_letter = #{firstLetter}
+    </select>
+
+    <update id="modifyStatus">
+        update launa_autohome_cursor
+        set `status` = #{status},gmt_modified = now()
+        where is_deleted = 'N'
+        and id = #{id}
+    </update>
+
+    <update id="updateManufacturerCarByIds">
+        update launa_autohome_cursor a,(
+        select '' as id,'' as car_manufacturer union
+        <foreach collection="carCategoryList" separator="union" item="carCategory">
+            select #{carCategory.id}, #{carCategory.carManufacturer}
+        </foreach>
+        ) b
+        set a.gmt_modified = now(),
+        a.car_manufacturer = b.car_manufacturer
+        where a.id = b.id
+    </update>
+
+
+
+    <insert id = "batchInsert" useGeneratedKeys="false" keyProperty="id">
+        insert into launa_autohome_cursor (
+        gmt_create,
+        creator,
+        gmt_modified,
+        modifier,
+        is_deleted,
+        version,
+        `level`,
+        parent_id,
+        first_letter,
+        brand,
+        series,
+        `year`,
+        `name`,
+        logo,
+        car_manufacturer,
+        full_id_path,
+        car_maintain_manual_id,
+        car_type,
+        url,
+        engine,
+        precursor,
+        spec_id,
+        gear
+        )
+        values
+        <foreach collection="carCategoryList" separator="," index="index" item="param">
+            (
+            NOW(),
+            1,
+            NOW(),
+            1,
+            'N',
+            #{param.version},
+            #{param.level},
+            #{param.parentId},
+            #{param.firstLetter},
+            #{param.brand},
+            #{param.series},
+            #{param.year},
+            #{param.name},
+            #{param.logo},
+            #{param.carManufacturer},
+            #{param.fullIdPath},
+            #{param.carMaintainManualId},
+            #{param.carType},
+            #{param.url},
+            #{param.engine},
+            #{param.precursor},
+            #{param.specId},
+            #{param.gear}
+            )
+        </foreach>
+    </insert>
+
+    <insert id = "insert" useGeneratedKeys="true" keyProperty="id">
+        insert into launa_autohome_cursor (
+        gmt_create,
+        creator,
+        gmt_modified,
+        modifier,
+        is_deleted,
+        version,
+        `level`,
+        parent_id,
+        first_letter,
+        brand,
+        series,
+        `year`,
+        `name`,
+        logo,
+        car_manufacturer,
+        full_id_path,
+        car_maintain_manual_id,
+        car_type,
+        url,
+        engine,
+        precursor,
+        spec_id,
+        gear
+        )
+        values
+            (
+            NOW(),
+            1,
+            NOW(),
+            1,
+            'N',
+            #{version},
+            #{level},
+            #{parentId},
+            #{firstLetter},
+            #{brand},
+            #{series},
+            #{year},
+            #{name},
+            #{logo},
+            #{carManufacturer},
+            #{fullIdPath},
+            #{carMaintainManualId},
+            #{carType},
+            #{url},
+            #{engine},
+            #{precursor},
+            #{specId},
+            #{gear}
+            )
+    </insert>
+
+</mapper>
