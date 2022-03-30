@@ -20,3 +20,4 @@ test-output/*
 templates/
 .idea
 *.jpg
+mysql_data/

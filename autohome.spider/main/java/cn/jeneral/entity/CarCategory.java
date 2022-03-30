@@ -9,6 +9,7 @@ import lombok.Data;
 public class CarCategory{
 
     private Long id;
+    private Long autohomeId;
     private Integer level;
     private Long parentId;
     private String firstLetter;
